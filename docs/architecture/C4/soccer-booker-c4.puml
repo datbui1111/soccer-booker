@@ -1,0 +1,42 @@
+@startuml SoccerBooker_C4
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LEFT_RIGHT()
+
+' C1 - System Context
+Person(user, "User", "Tìm/đặt sân, xem giải đấu, feedback, bình luận, xem livestream")
+Person(owner, "Pitch Owner", "Quản lý sân, lịch, booking, giải đấu, trận đấu, thống kê và doanh thu")
+System(sb, "Soccer Booker", "Web platform quản lý sân bóng, booking và thông tin giải đấu")
+System_Ext(geo, "Browser Geolocation", "Dịch vụ vị trí của trình duyệt")
+System_Ext(live, "External Livestream Platform", "Nền tảng livestream bên ngoài")
+
+Rel(user, sb, "Sử dụng nền tảng")
+Rel(owner, sb, "Quản lý nội dung và nghiệp vụ")
+Rel(sb, geo, "Đọc vị trí khi User cho phép", "Browser API")
+Rel(user, live, "Truy cập livestream qua liên kết", "HTTPS")
+Rel(sb, live, "Lưu/cung cấp đường dẫn livestream", "HTTPS/link")
+
+newpage
+' C2 - Container
+Person(user2, "User", "End user")
+Person(owner2, "Pitch Owner", "Content/operation manager")
+System_Boundary(sb2, "Soccer Booker") {
+    Container(web, "Web Frontend", "Responsive Web UI", "Giao diện đăng nhập, tìm sân, booking, giải đấu, trận đấu, thống kê")
+    Container(api, "Application Backend / REST API", "Web application", "Authentication và business logic cho pitch, schedule, booking, feedback, tournament, match, statistics, comment, livestream link, revenue")
+    ContainerDb(db, "Database", "Relational database", "Lưu dữ liệu nghiệp vụ của Soccer Booker")
+}
+System_Ext(geo2, "Browser Geolocation", "Dịch vụ vị trí của trình duyệt")
+System_Ext(live2, "External Livestream Platform", "Nền tảng livestream bên ngoài")
+
+Rel(user2, web, "Sử dụng")
+Rel(owner2, web, "Sử dụng")
+Rel(web, api, "Gọi API", "HTTP/HTTPS")
+Rel(api, db, "Đọc/ghi dữ liệu", "SQL")
+Rel(web, geo2, "Xin quyền/đọc vị trí", "Browser API")
+Rel(web, live2, "Mở livestream", "HTTPS")
+Rel(api, live2, "Lưu/cung cấp link livestream", "URL")
+
+note right of sb2
+v1.0: Không xử lý thanh toán trực tuyến.
+User chuyển khoản và hoàn tiền được thực hiện bên ngoài hệ thống.
+end note
+@enduml
