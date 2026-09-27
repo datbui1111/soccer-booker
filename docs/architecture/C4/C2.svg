@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#333"/></marker></defs>
+<rect width="1200" height="360" fill="white"/>
+<g font-family="Arial" font-size="15" fill="#111">
+<rect x="30" y="60" width="110" height="50" rx="10" fill="#f4f4f4" stroke="#333"/><text x="85" y="90" text-anchor="middle">User</text>
+<rect x="30" y="250" width="110" height="50" rx="10" fill="#f4f4f4" stroke="#333"/><text x="85" y="280" text-anchor="middle">Pitch Owner</text>
+<rect x="190" y="110" width="250" height="150" rx="12" fill="#fafafa" stroke="#333" stroke-width="2"/><text x="315" y="140" text-anchor="middle">Web Frontend</text><text x="315" y="165" text-anchor="middle" font-size="12">Responsive Web UI</text><text x="315" y="205" text-anchor="middle" font-size="12">Login • Search • Booking</text><text x="315" y="228" text-anchor="middle" font-size="12">Tournament • Match • Stats</text>
+<rect x="520" y="110" width="290" height="150" rx="12" fill="#fafafa" stroke="#333" stroke-width="2"/><text x="665" y="140" text-anchor="middle">Application Backend / REST API</text><text x="665" y="165" text-anchor="middle" font-size="12">Authentication + business logic</text><text x="665" y="205" text-anchor="middle" font-size="12">Pitch • Booking • Tournament</text><text x="665" y="228" text-anchor="middle" font-size="12">Feedback • Match • Revenue</text>
+<rect x="900" y="120" width="170" height="130" rx="12" fill="#f4f4f4" stroke="#333"/><text x="985" y="155" text-anchor="middle">Database</text><text x="985" y="180" text-anchor="middle" font-size="12">Relational DB</text><text x="985" y="210" text-anchor="middle" font-size="12">Business data</text>
+<line x1="140" y1="85" x2="190" y2="140" stroke="#333" marker-end="url(#a)"/><line x1="140" y1="275" x2="190" y2="230" stroke="#333" marker-end="url(#a)"/><line x1="440" y1="185" x2="520" y2="185" stroke="#333" marker-end="url(#a)"/><line x1="810" y1="185" x2="900" y2="185" stroke="#333" marker-end="url(#a)"/>
+</g></svg>
