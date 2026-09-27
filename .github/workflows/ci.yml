@@ -1,0 +1,60 @@
+name: Soccer Booker CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: soccer_booker_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres -d soccer_booker_ci"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate OpenAPI
+        run: |
+          python - <<'PY'
+          import pathlib, yaml
+          d=yaml.safe_load(pathlib.Path("api/openapi.yaml").read_text())
+          assert d["openapi"].startswith("3.")
+          assert d["paths"]
+          fr=set()
+          for p in d["paths"].values():
+            for op in p.values():
+              if isinstance(op,dict): fr.update(op.get("x-fr-ids",[]))
+          assert len(fr)==55, f"Expected 55 traced FRs, got {len(fr)}"
+          print("OpenAPI OK; 55 FR IDs traced")
+          PY
+      - name: Validate documentation
+        run: |
+          test -s docs/SRS_v1.0.md
+          test -s docs/RTM_v3.0.md
+          test -s docs/architecture/C4/soccer-booker-c4.puml
+          test -s docs/architecture/C4/C1.svg
+          test -s docs/architecture/C4/C2.svg
+          test -s docs/architecture/DFD/soccer-booker-dfd.puml
+          test -s docs/architecture/DFD/DFD.svg
+          test -s docs/architecture/UML/class-diagram.puml
+          test -s docs/architecture/UML/class-diagram.svg
+          grep -q "FR-AUTH-001" docs/SRS_v1.0.md
+          grep -q "NFR-19" docs/SRS_v1.0.md
+          grep -q "UC-01" docs/SRS_v1.0.md
+      - name: Validate PlantUML source markers
+        run: |
+          for f in docs/architecture/C4/soccer-booker-c4.puml docs/architecture/DFD/soccer-booker-dfd.puml docs/architecture/UML/class-diagram.puml; do
+            grep -q "@startuml" "$f" && grep -q "@enduml" "$f"
+          done
+      - name: Apply PostgreSQL schema
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d soccer_booker_ci -v ON_ERROR_STOP=1 -f database/schema.sql
+          psql -h localhost -U postgres -d soccer_booker_ci -c "\dt"
