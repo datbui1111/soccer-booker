@@ -1,0 +1,342 @@
+openapi: 3.0.3
+info:
+  title: Soccer Booker API
+  version: 1.0.0
+  description: REST contract for Soccer Booker v1.0. Online payment/refund are outside the system; livestream is an external URL.
+servers:
+  - url: https://api.example.com
+tags:
+  - {name: Authentication}
+  - {name: Pitches}
+  - {name: Bookings}
+  - {name: Feedback}
+  - {name: Tournaments}
+  - {name: Matches}
+  - {name: Comments}
+  - {name: Livestream}
+  - {name: Owner}
+  - {name: Revenue}
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      security: []
+      operationId: register
+      x-fr-ids: [FR-AUTH-001]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RegisterRequest'}}}}
+      responses: {'201': {description: Created}, '409': {description: Duplicate account}}
+  /auth/login:
+    post:
+      tags: [Authentication]
+      security: []
+      operationId: login
+      x-fr-ids: [FR-AUTH-002]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/LoginRequest'}}}}
+      responses: {'200': {description: Authenticated, content: {application/json: {schema: {$ref: '#/components/schemas/AuthResponse'}}}}, '401': {description: Invalid credentials}}
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      x-fr-ids: [FR-AUTH-003]
+      responses: {'204': {description: Logged out}}
+  /me:
+    get:
+      tags: [Authentication]
+      operationId: getMe
+      x-fr-ids: [FR-AUTH-004]
+      responses: {'200': {description: Account, content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}}}
+    patch:
+      tags: [Authentication, Owner]
+      operationId: updateMe
+      x-fr-ids: [FR-AUTH-004, FR-OWNER-001]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/AccountUpdate'}}}}
+      responses: {'200': {description: Updated account}}
+  /pitches:
+    get:
+      tags: [Pitches]
+      operationId: searchPitches
+      x-fr-ids: [FR-PITCH-001, FR-PITCH-002, FR-PITCH-003, FR-PITCH-004]
+      parameters:
+        - {name: q, in: query, schema: {type: string}}
+        - {name: area, in: query, schema: {type: string}}
+        - {name: latitude, in: query, schema: {type: number, format: double}}
+        - {name: longitude, in: query, schema: {type: number, format: double}}
+        - {name: maxDistanceKm, in: query, schema: {type: number, minimum: 0}}
+        - {name: date, in: query, schema: {type: string, format: date}}
+        - {name: startTime, in: query, schema: {type: string, format: time}}
+        - {name: endTime, in: query, schema: {type: string, format: time}}
+        - {name: minPrice, in: query, schema: {type: number, minimum: 0}}
+        - {name: maxPrice, in: query, schema: {type: number, minimum: 0}}
+        - {name: pitchType, in: query, schema: {type: string}}
+        - {name: amenity, in: query, schema: {type: string}}
+        - {name: minRating, in: query, schema: {type: number, minimum: 0, maximum: 5}}
+      responses: {'200': {description: Matching pitches, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Pitch'}}}}}}
+    post:
+      tags: [Owner]
+      operationId: createPitch
+      x-fr-ids: [FR-OWNER-002]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PitchWrite'}}}}
+      responses: {'201': {description: Created}}
+  /pitches/{pitchId}:
+    parameters: [{name: pitchId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Pitches]
+      operationId: getPitch
+      x-fr-ids: [FR-PITCH-005]
+      responses: {'200': {description: Pitch detail}}
+    patch:
+      tags: [Owner]
+      operationId: updatePitch
+      x-fr-ids: [FR-OWNER-003, FR-OWNER-004, FR-OWNER-008]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PitchWrite'}}}}
+      responses: {'200': {description: Updated}}
+    delete:
+      tags: [Owner]
+      operationId: deletePitch
+      x-fr-ids: [FR-OWNER-004]
+      responses: {'204': {description: Deleted/deactivated}}
+  /pitches/{pitchId}/schedules:
+    parameters: [{name: pitchId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Pitches]
+      operationId: getPitchSchedule
+      x-fr-ids: [FR-PITCH-006]
+      parameters: [{name: date, in: query, required: true, schema: {type: string, format: date}}]
+      responses: {'200': {description: Schedule slots, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Schedule'}}}}}}
+    post:
+      tags: [Owner]
+      operationId: managePitchSchedule
+      x-fr-ids: [FR-PITCH-007, FR-OWNER-006, FR-OWNER-007]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Schedule'}}}}
+      responses: {'201': {description: Schedule saved}}
+  /pitches/{pitchId}/pricing:
+    put:
+      tags: [Owner]
+      operationId: updatePitchPricing
+      x-fr-ids: [FR-OWNER-005]
+      parameters: [{name: pitchId, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Pricing'}}}}
+      responses: {'200': {description: Pricing saved}}
+  /bookings:
+    post:
+      tags: [Bookings]
+      operationId: createBooking
+      x-fr-ids: [FR-BOOK-001, FR-BOOK-002, FR-BOOK-003]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BookingCreate'}}}}
+      responses: {'201': {description: Created booking}, '409': {description: Slot unavailable}}
+    get:
+      tags: [Bookings]
+      operationId: listBookings
+      x-fr-ids: [FR-BOOK-011, FR-BOOK-012]
+      parameters: [{name: status, in: query, schema: {$ref: '#/components/schemas/BookingStatus'}}]
+      responses: {'200': {description: Booking history/statistics}}
+  /bookings/{bookingId}:
+    parameters: [{name: bookingId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Bookings]
+      operationId: getBooking
+      x-fr-ids: [FR-BOOK-011]
+      responses: {'200': {description: Booking}}
+    post:
+      tags: [Bookings]
+      operationId: bookingAction
+      x-fr-ids: [FR-BOOK-004, FR-BOOK-006, FR-BOOK-007, FR-BOOK-009, FR-BOOK-010]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BookingAction'}}}}
+      responses: {'200': {description: Updated booking}, '409': {description: Invalid state transition}}
+  /bookings/{bookingId}/expire:
+    post:
+      tags: [Bookings]
+      operationId: expireBooking
+      description: Scheduled/internal operation after the four-hour deposit timeout.
+      x-fr-ids: [FR-BOOK-008]
+      parameters: [{name: bookingId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Booking expired}}
+  /bookings/{bookingId}/deposit:
+    parameters: [{name: bookingId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Bookings]
+      operationId: getDepositInstructions
+      x-fr-ids: [FR-BOOK-005]
+      responses: {'200': {description: Deposit instructions}}
+    post:
+      tags: [Bookings]
+      operationId: notifyDeposit
+      x-fr-ids: [FR-BOOK-006]
+      responses: {'200': {description: Transfer notice recorded}}
+  /owner/bookings:
+    get:
+      tags: [Owner]
+      operationId: ownerBookings
+      x-fr-ids: [FR-BOOK-004, FR-BOOK-007, FR-BOOK-013]
+      responses: {'200': {description: Owner booking list}}
+  /feedback:
+    post:
+      tags: [Feedback]
+      operationId: createFeedback
+      x-fr-ids: [FR-FEEDBACK-001, FR-FEEDBACK-002, FR-FEEDBACK-003]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/FeedbackCreate'}}}}
+      responses: {'201': {description: Feedback created}, '409': {description: Feedback already exists}}
+  /pitches/{pitchId}/feedback:
+    get:
+      tags: [Feedback]
+      operationId: pitchFeedback
+      x-fr-ids: [FR-FEEDBACK-004, FR-FEEDBACK-005]
+      parameters: [{name: pitchId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Feedback and average rating}}
+  /tournaments:
+    get:
+      tags: [Tournaments]
+      operationId: listTournaments
+      x-fr-ids: [FR-TOUR-004]
+      responses: {'200': {description: Tournament list}}
+    post:
+      tags: [Tournaments]
+      operationId: createTournament
+      x-fr-ids: [FR-TOUR-001]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Tournament'}}}}
+      responses: {'201': {description: Created}}
+  /tournaments/{tournamentId}:
+    parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Tournaments]
+      operationId: getTournament
+      x-fr-ids: [FR-TOUR-004]
+      responses: {'200': {description: Tournament}}
+    patch:
+      tags: [Tournaments]
+      operationId: updateTournament
+      x-fr-ids: [FR-TOUR-002]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Tournament'}}}}
+      responses: {'200': {description: Updated}}
+    delete:
+      tags: [Tournaments]
+      operationId: cancelTournament
+      x-fr-ids: [FR-TOUR-003]
+      responses: {'204': {description: Cancelled/deleted}}
+  /tournaments/{tournamentId}/registrations:
+    parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+    post:
+      tags: [Tournaments]
+      operationId: registerTournament
+      x-fr-ids: [FR-TOUR-005]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Registration'}}}}
+      responses: {'201': {description: Registered}}
+    get:
+      tags: [Tournaments]
+      operationId: tournamentRegistrations
+      x-fr-ids: [FR-TOUR-006]
+      responses: {'200': {description: Registered teams}}
+  /tournaments/{tournamentId}/teams:
+    post:
+      tags: [Tournaments]
+      operationId: createTeam
+      x-fr-ids: [FR-TOUR-006]
+      parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Team'}}}}
+      responses: {'201': {description: Team created}}
+  /tournaments/{tournamentId}/matches:
+    parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Matches]
+      operationId: listMatches
+      x-fr-ids: [FR-MATCH-004]
+      responses: {'200': {description: Matches}}
+    post:
+      tags: [Matches]
+      operationId: createMatch
+      x-fr-ids: [FR-MATCH-001, FR-MATCH-002]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/MatchCreate'}}}}
+      responses: {'201': {description: Match scheduled}, '409': {description: Pitch/time conflict}}
+  /matches/{matchId}:
+    get:
+      tags: [Matches]
+      operationId: getMatch
+      x-fr-ids: [FR-MATCH-004]
+      parameters: [{name: matchId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Match}}
+  /matches/{matchId}/result:
+    put:
+      tags: [Matches]
+      operationId: updateMatchResult
+      x-fr-ids: [FR-MATCH-003]
+      parameters: [{name: matchId, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/MatchResult'}}}}
+      responses: {'200': {description: Result saved}}
+  /tournaments/{tournamentId}/standings:
+    get:
+      tags: [Tournaments]
+      operationId: standings
+      x-fr-ids: [FR-TOUR-007]
+      parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Calculated standings}}
+  /tournaments/{tournamentId}/player-stats:
+    get:
+      tags: [Tournaments]
+      operationId: playerStats
+      x-fr-ids: [FR-TOUR-008, FR-TOUR-009]
+      parameters: [{name: tournamentId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Player statistics and top scorers}}
+  /comments:
+    get:
+      tags: [Comments]
+      operationId: listComments
+      x-fr-ids: [FR-COMMENT-002]
+      parameters:
+        - {name: tournamentId, in: query, schema: {type: string, format: uuid}}
+        - {name: matchId, in: query, schema: {type: string, format: uuid}}
+      responses: {'200': {description: Relevant comments}}
+    post:
+      tags: [Comments]
+      operationId: createComment
+      x-fr-ids: [FR-COMMENT-001]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Comment'}}}}
+      responses: {'201': {description: Comment created}}
+  /matches/{matchId}/livestream:
+    parameters: [{name: matchId, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Livestream]
+      operationId: getLivestream
+      x-fr-ids: [FR-LIVE-002]
+      responses: {'200': {description: External livestream URL}}
+    put:
+      tags: [Livestream]
+      operationId: setLivestream
+      x-fr-ids: [FR-LIVE-001]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Livestream'}}}}
+      responses: {'200': {description: URL saved}}
+  /owner/revenue:
+    get:
+      tags: [Revenue]
+      operationId: revenueStats
+      x-fr-ids: [FR-REVENUE-001]
+      parameters:
+        - {name: from, in: query, schema: {type: string, format: date}}
+        - {name: to, in: query, schema: {type: string, format: date}}
+        - {name: pitchId, in: query, schema: {type: string, format: uuid}}
+      responses: {'200': {description: Revenue statistics}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    User: {type: object, properties: {id: {type: string, format: uuid}, fullName: {type: string}, email: {type: string, format: email}, phone: {type: string}, role: {type: string, enum: [USER, PITCH_OWNER]}}}
+    RegisterRequest: {type: object, required: [fullName,email,phone,password,role], properties: {fullName: {type: string}, email: {type: string, format: email}, phone: {type: string}, password: {type: string, format: password}, role: {type: string, enum: [USER,PITCH_OWNER]}}}
+    LoginRequest: {type: object, required: [email,password], properties: {email: {type: string, format: email}, password: {type: string, format: password}}}
+    AuthResponse: {type: object, properties: {accessToken: {type: string}, tokenType: {type: string}, user: {$ref: '#/components/schemas/User'}}}
+    AccountUpdate: {type: object, properties: {fullName: {type: string}, phone: {type: string}, facebookUrl: {type: string, format: uri}, otherContact: {type: string}}}
+    Pitch: {type: object, properties: {id: {type: string, format: uuid}, ownerId: {type: string, format: uuid}, name: {type: string}, address: {type: string}, area: {type: string}, pitchType: {type: string}, latitude: {type: number}, longitude: {type: number}, description: {type: string}, amenities: {type: array, items: {type: string}}, imageUrls: {type: array, items: {type: string, format: uri}}, rating: {type: number}}}
+    PitchWrite: {type: object, required: [name,address], properties: {name: {type: string}, address: {type: string}, area: {type: string}, pitchType: {type: string}, description: {type: string}, amenities: {type: array, items: {type: string}}, imageUrls: {type: array, items: {type: string, format: uri}}, status: {type: string}}}
+    Schedule: {type: object, required: [scheduleDate,startTime,endTime], properties: {id: {type: string, format: uuid}, scheduleDate: {type: string, format: date}, startTime: {type: string, format: time}, endTime: {type: string, format: time}, status: {type: string, enum: [AVAILABLE,BOOKED,UNAVAILABLE]}}}
+    Pricing: {type: object, properties: {bankName: {type: string}, accountName: {type: string}, accountNumber: {type: string}, qrCodeUrl: {type: string, format: uri}, depositAmount: {type: number}, serviceFee: {type: number}, transferInstruction: {type: string}}}
+    BookingStatus: {type: string, enum: [PENDING,WAITING_FOR_DEPOSIT,CONFIRMED,REJECTED,CANCELLED,EXPIRED,COMPLETED]}
+    BookingCreate: {type: object, required: [pitchId,scheduleId], properties: {pitchId: {type: string, format: uuid}, scheduleId: {type: string, format: uuid}}}
+    BookingAction: {type: object, required: [action], properties: {action: {type: string, enum: [APPROVE,REJECT,DEPOSIT_NOTIFIED,VERIFY_DEPOSIT,USER_CANCEL,OWNER_CANCEL,COMPLETE]}, reason: {type: string}}}
+    FeedbackCreate: {type: object, required: [bookingId,rating], properties: {bookingId: {type: string, format: uuid}, rating: {type: integer, minimum: 1, maximum: 5}, content: {type: string}, imageUrls: {type: array, items: {type: string, format: uri}}}}
+    Tournament: {type: object, required: [name], properties: {id: {type: string, format: uuid}, name: {type: string}, description: {type: string}, startAt: {type: string, format: date-time}, endAt: {type: string, format: date-time}, pitchId: {type: string, format: uuid}, format: {type: string}, maxTeams: {type: integer}, registrationOpenAt: {type: string, format: date-time}, registrationCloseAt: {type: string, format: date-time}, status: {type: string}}}
+    Registration: {type: object, properties: {teamId: {type: string, format: uuid}}}
+    Team: {type: object, properties: {id: {type: string, format: uuid}, tournamentId: {type: string, format: uuid}, name: {type: string}, captainUserId: {type: string, format: uuid}, status: {type: string}}}
+    MatchCreate: {type: object, required: [pitchId,teamAId,teamBId,scheduledAt], properties: {pitchId: {type: string, format: uuid}, teamAId: {type: string, format: uuid}, teamBId: {type: string, format: uuid}, scheduledAt: {type: string, format: date-time}, endAt: {type: string, format: date-time}, roundName: {type: string}}}
+    MatchResult: {type: object, required: [teamAScore,teamBScore], properties: {teamAScore: {type: integer, minimum: 0}, teamBScore: {type: integer, minimum: 0}}}
+    Comment: {type: object, required: [content], properties: {tournamentId: {type: string, format: uuid}, matchId: {type: string, format: uuid}, content: {type: string, minLength: 1}}}
+    Livestream: {type: object, required: [url], properties: {url: {type: string, format: uri}}}
