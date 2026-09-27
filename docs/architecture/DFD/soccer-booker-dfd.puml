@@ -1,0 +1,58 @@
+@startuml SoccerBooker_DFD
+left to right direction
+skinparam shadowing false
+skinparam rectangle {
+  RoundCorner 12
+}
+
+rectangle "User" as U
+rectangle "Pitch Owner" as PO
+rectangle "Browser
+Geolocation" as GEO
+rectangle "External
+Livestream Platform" as LIVE
+
+rectangle "P1
+Authentication & User" as P1
+rectangle "P2
+Pitch & Schedule" as P2
+rectangle "P3
+Booking Management" as P3
+rectangle "P4
+Feedback & Comment" as P4
+rectangle "P5
+Tournament / Match / Statistics" as P5
+rectangle "P6
+Livestream Link & Revenue" as P6
+
+database "D1
+Soccer Booker Database" as DB
+
+U --> P1 : register / login
+U --> P2 : search / filter / nearby / view schedule
+U --> P3 : create / cancel / history / confirm deposit
+U --> P4 : feedback / comment / view
+U --> P5 : view / register tournament / matches / standings
+U --> P6 : view revenue-related public info / livestream link
+
+PO --> P1 : register / login / profile
+PO --> P2 : manage pitch / price / schedule
+PO --> P3 : accept / reject / cancel booking
+PO --> P4 : view feedback / manage allowed content
+PO --> P5 : manage tournament / teams / matches / results / stats
+PO --> P6 : provide livestream link / revenue data
+
+P2 <--> GEO : location permission / position
+P6 <--> LIVE : external livestream URL / access
+
+P1 <--> DB
+P2 <--> DB
+P3 <--> DB
+P4 <--> DB
+P5 <--> DB
+P6 <--> DB
+
+note bottom of P3
+Deposit transfer and refund are external to Soccer Booker v1.0.
+end note
+@enduml
