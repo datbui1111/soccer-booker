@@ -1,0 +1,48 @@
+@startuml SoccerBooker_Class
+hide circle
+skinparam classAttributeIconSize 0
+class User { id: UUID; full_name: varchar; email: varchar; phone: varchar; password_hash: varchar; role: UserRole }
+class Pitch { id: UUID; owner_id: UUID; name: varchar; address: text; area: varchar; pitch_type: varchar; status: varchar }
+class PitchSchedule { id: UUID; pitch_id: UUID; schedule_date: date; start_time: time; end_time: time; status: varchar }
+class Booking { id: UUID; user_id: UUID; pitch_id: UUID; schedule_id: UUID; status: BookingStatus; amount: numeric; deposit_amount: numeric }
+class Deposit { id: UUID; booking_id: UUID; amount: numeric; bank_name: varchar; status: varchar }
+class Feedback { id: UUID; booking_id: UUID; user_id: UUID; pitch_id: UUID; rating: int; content: text }
+class Tournament { id: UUID; owner_id: UUID; name: varchar; start_at: timestamp; end_at: timestamp; status: varchar }
+class Team { id: UUID; tournament_id: UUID; name: varchar; captain_user_id: UUID; status: varchar }
+class Player { id: UUID; team_id: UUID; name: varchar; shirt_number: int; goals: int; assists: int }
+class Match { id: UUID; tournament_id: UUID; pitch_id: UUID; team_a_id: UUID; team_b_id: UUID; scheduled_at: timestamp; status: varchar }
+class MatchResult { id: UUID; match_id: UUID; team_a_score: int; team_b_score: int; recorded_by: UUID }
+class Standing { id: UUID; tournament_id: UUID; team_id: UUID; played: int; won: int; drawn: int; lost: int; points: int }
+class Comment { id: UUID; user_id: UUID; tournament_id: UUID; match_id: UUID; content: text }
+class Livestream { id: UUID; match_id: UUID; url: text; provided_by: UUID }
+class Revenue { id: UUID; pitch_id: UUID; booking_id: UUID; owner_id: UUID; amount: numeric }
+class AuditLog { id: UUID; actor_user_id: UUID; action: varchar; entity_type: varchar; entity_id: UUID; created_at: timestamp }
+User "1" -- "0..*" Pitch
+Pitch "1" -- "0..*" PitchSchedule
+User "1" -- "0..*" Booking
+Pitch "1" -- "0..*" Booking
+PitchSchedule "1" -- "0..1" Booking
+Booking "1" -- "0..1" Deposit
+Booking "1" -- "0..1" Feedback
+User "1" -- "0..*" Feedback
+Pitch "1" -- "0..*" Feedback
+User "1" -- "0..*" Tournament
+Tournament "1" -- "0..*" Team
+Team "1" -- "0..*" Player
+Tournament "1" -- "0..*" Match
+Pitch "1" -- "0..*" Match
+Team "1" -- "0..*" Match
+Match "1" -- "0..1" MatchResult
+Tournament "1" -- "0..*" Standing
+Team "1" -- "0..1" Standing
+User "1" -- "0..*" Comment
+Tournament "1" -- "0..*" Comment
+Match "1" -- "0..*" Comment
+Match "1" -- "0..1" Livestream
+User "1" -- "0..*" Livestream
+User "1" -- "0..*" Revenue
+Pitch "1" -- "0..*" Revenue
+Booking "1" -- "0..1" Revenue
+User "1" -- "0..*" AuditLog
+note "Derived from SRS data entities; PostgreSQL schema is the corresponding CSDL." as N
+@enduml
