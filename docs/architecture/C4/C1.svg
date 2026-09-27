@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#333"/></marker></defs>
+<rect width="1200" height="360" fill="white"/>
+<g font-family="Arial" font-size="16" fill="#111">
+<rect x="40" y="70" width="250" height="70" rx="12" fill="#f4f4f4" stroke="#333"/><text x="165" y="98" text-anchor="middle">User</text><text x="165" y="122" text-anchor="middle" font-size="12">Tìm/đặt sân, giải đấu, feedback</text>
+<rect x="40" y="220" width="250" height="70" rx="12" fill="#f4f4f4" stroke="#333"/><text x="165" y="248" text-anchor="middle">Pitch Owner</text><text x="165" y="272" text-anchor="middle" font-size="12">Quản lý sân, booking, giải đấu</text>
+<rect x="450" y="130" width="300" height="90" rx="14" fill="#e8e8e8" stroke="#222" stroke-width="2"/><text x="600" y="165" text-anchor="middle">Soccer Booker</text><text x="600" y="190" text-anchor="middle" font-size="13">Web platform quản lý sân bóng</text>
+<rect x="900" y="70" width="230" height="70" rx="12" fill="#f4f4f4" stroke="#333"/><text x="1015" y="98" text-anchor="middle">Browser Geolocation</text><text x="1015" y="122" text-anchor="middle" font-size="12">Vị trí trình duyệt</text>
+<rect x="900" y="220" width="230" height="70" rx="12" fill="#f4f4f4" stroke="#333"/><text x="1015" y="248" text-anchor="middle">External Livestream</text><text x="1015" y="272" text-anchor="middle" font-size="12">Nền tảng bên ngoài</text>
+<line x1="290" y1="105" x2="450" y2="165" stroke="#333" marker-end="url(#a)"/><line x1="290" y1="255" x2="450" y2="190" stroke="#333" marker-end="url(#a)"/>
+<line x1="750" y1="165" x2="900" y2="105" stroke="#333" marker-end="url(#a)"/><line x1="750" y1="190" x2="900" y2="255" stroke="#333" marker-end="url(#a)"/>
+</g></svg>
